@@ -1,0 +1,50 @@
+{
+  "name": "@viero/image-proxy",
+  "version": "1.0.0",
+  "description": "A simple image proxy.",
+  "homepage": "https://github.com/vieroinc/viero-image-proxy",
+  "contributors": [
+    {
+      "name": "Zoltan Gobolos",
+      "email": "zoltan.gobolos@viero.tv"
+    }
+  ],
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vieroinc/viero-image-proxy.git"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "reset": "npm run clean && rimraf node_modules",
+    "lint": "eslint ./src",
+    "build": "npm run lint && npm run clean && babel src -d ./dist --source-maps inline",
+    "build:nolint": "npm run clean && babel src -d ./dist --source-maps inline",
+    "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
+    "dist:nolint": "npm run build:nolint && copyfiles package.json README.md LICENSE.md dist",
+    "npmjs": "npm run dist && npm publish ./dist --access public"
+  },
+  "module": "./index.js",
+  "bin": {
+    "vieroimageproxy": "cmd.js"
+  },
+  "dependencies": {
+    "@viero/common": "^1.6.2",
+    "@viero/common-nodejs": "^1.2.7",
+    "bluebird": "^3.7.2",
+    "commander": "^6.1.0",
+    "sharp": "^0.26.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.1",
+    "@babel/core": "^7.12.3",
+    "@babel/preset-env": "^7.12.1",
+    "babel-preset-bluebird": "^1.0.1",
+    "copyfiles": "^2.4.0",
+    "eslint": "^7.10.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "prettier": "^2.1.2",
+    "rimraf": "^3.0.2"
+  }
+}
