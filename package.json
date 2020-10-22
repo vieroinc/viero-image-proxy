@@ -1,6 +1,6 @@
 {
   "name": "@viero/image-proxy",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A simple image proxy.",
   "homepage": "https://github.com/vieroinc/viero-image-proxy",
   "contributors": [
@@ -29,8 +29,8 @@
     "vieroimageproxy": "cmd.js"
   },
   "dependencies": {
-    "@viero/common": "^1.6.2",
-    "@viero/common-nodejs": "^1.2.7",
+    "@viero/common": "^1.6.3",
+    "@viero/common-nodejs": "^1.2.11",
     "bluebird": "^3.7.2",
     "commander": "^6.1.0",
     "sharp": "^0.26.2"

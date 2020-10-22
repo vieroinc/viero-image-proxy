@@ -26,6 +26,7 @@ const {
 const { VieroLog } = require('@viero/common/log');
 const { VieroError } = require('@viero/common/error');
 const { Parallel } = require('@viero/common-nodejs/parallel');
+const { http400 } = require('@viero/common-nodejs/http/server/error');
 
 const log = new VieroLog('imageproxy/cache');
 const b64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
@@ -41,13 +42,19 @@ const sha256Pool = Parallel.createPool('sha256', `${__dirname}${sep}thread.hashi
 
 const genFilePathBy = (conversionOptions, cacheKey) => {
   if (!conversionOptions) {
-    throw new VieroError('imageproxy/cache', 892448);
+    throw http400({
+      userData: { [VieroError.KEY.ERROR]: new VieroError('imageproxy/cache', 892448) },
+    });
   }
   if (!cacheKey) {
-    throw new VieroError('imageproxy/cache', 833668);
+    throw http400({
+      userData: { [VieroError.KEY.ERROR]: new VieroError('imageproxy/cache', 833668) },
+    });
   }
   if (!b64Regex.test(cacheKey)) {
-    throw new VieroError('imageproxy/cache', 601781);
+    throw http400({
+      userData: { [VieroError.KEY.ERROR]: new VieroError('imageproxy/cache', 601781) },
+    });
   }
   return [cacheDirectory, 'cache', ...cacheKey.replace(/\//g, '_').match(/.{1,2}/g), conversionOptions].join('/');
 };

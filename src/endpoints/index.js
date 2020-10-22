@@ -17,6 +17,7 @@
 const { VieroLog } = require('@viero/common/log');
 const { respondOk, respondError } = require('@viero/common-nodejs/http/server/respond');
 const { VieroHttpError, http404 } = require('@viero/common-nodejs/http/server/error');
+const { VieroError } = require('@viero/common/error');
 const { from, to, purge } = require('../cache');
 const { fetch } = require('../fetch');
 const { convert } = require('../convert');
@@ -57,36 +58,42 @@ const respondWithStream = (headers, stream, url, sign, source, t, res) => {
 };
 
 const respondWithError = (err, url, t, res) => {
-  let statusCode = 500;
-  let something = err;
   if (err instanceof VieroHttpError) {
-    statusCode = err.httpCode;
-    something = err.get('url');
+    res.statusCode = err.httpCode;
+    res.statusMessage = err.httpMessage;
+    if (log.isWarning()) {
+      log.warning(
+        res.statusCode, `${Date.now() - t}ms`, url, '!',
+        err.get('url') || (err.get(VieroError.KEY.ERROR) ? err.get(VieroError.KEY.ERROR).message : 'unknown'),
+      );
+    }
+  } else {
+    res.statusCode = 500;
+    res.statusMessage = 'Internal server error';
+    if (log.isError()) {
+      log.error(res.statusCode, `${Date.now() - t}ms`, url, '!', err.message);
+    }
   }
-  if (log.isError()) log.error(statusCode, `${Date.now() - t}ms`, url, '!', something);
   res.end();
 };
 
 module.exports = {
   register(server) {
     const route = server.route('/:conversionOptions/:cacheKey/:path...');
-    route.get(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => getOrAdd({
-      conversionOptions, cacheKey, path,
-    })
+    route.get(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => Promise
+      .try(() => getOrAdd({ conversionOptions, cacheKey, path }))
       .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
       .catch((err) => respondWithError(err, url, t, res)));
 
-    route.put(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => update({
-      conversionOptions, cacheKey, path,
-    })
+    route.put(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => Promise
+      .try(() => update({ conversionOptions, cacheKey, path }))
       .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
       .catch((err) => respondWithError(err, url, t, res)));
 
     server.delete(
       '/:conversionOptions/:cacheKey',
-      ({ req: { pathParams: { conversionOptions, cacheKey } }, res }) => remove({
-        conversionOptions, cacheKey,
-      })
+      ({ req: { pathParams: { conversionOptions, cacheKey } }, res }) => Promise
+        .try(() => remove({ conversionOptions, cacheKey }))
         .then(() => respondOk(res))
         .catch((err) => {
           if (err.code === 'ENOENT') return respondError(res, http404());

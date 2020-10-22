@@ -16,7 +16,7 @@
 
 const { VieroLog } = require('@viero/common/log');
 const { VieroHTTPClient } = require('@viero/common-nodejs/http/client');
-const { VieroHttpError } = require('@viero/common-nodejs/http/server/error');
+const { errorCode } = require('@viero/common-nodejs/http/server/error');
 
 const log = new VieroLog('imageproxy/fetch');
 let baseURL = null;
@@ -33,7 +33,7 @@ module.exports = {
     return VieroHTTPClient.request(url)
       .then((res) => {
         if (res.statusCode === 200) return Promise.all([url, res, res.data()]);
-        throw new VieroHttpError(res.statusCode, res.statusMessage, { url });
+        throw errorCode({ code: res.statusCode, message: res.statusMessage, userData: { url } });
       });
   },
 };
