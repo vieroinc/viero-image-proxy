@@ -17,6 +17,7 @@
 const { program } = require('commander');
 const { VieroHTTPServer } = require('@viero/common-nodejs/http/server');
 const { VieroLog } = require('@viero/common/log');
+const { VieroError } = require('@viero/common/error');
 const path = require('path');
 
 global.Promise = require('bluebird');
@@ -29,8 +30,8 @@ program
   .option('-d, --debug', 'output extra debugging')
   .option('-p, --port <port number>', 'TCP port to bind to, defaults 12080', '12080')
   .option('-a, --address <address>', 'IP address or host to bind to, defaults to "::"', '::')
-  .option('-c, --cache <path>', 'the cache directory')
-  .option('-b, --baseURL <url>', 'the base URL');
+  .requiredOption('-c, --cache <path>', 'the cache directory')
+  .requiredOption('-b, --baseURL <url>', 'the base URL');
 program.parse(process.argv);
 
 require('./cache').setCacheDirectory(path.resolve(program.cache));
@@ -50,7 +51,14 @@ httpServer.setCORSOptions({ origins: 'any', headers: ['content-type'] });
 require('./endpoints')
   .register(httpServer)
   .then(() => httpServer.run({ host: program.address, port: program.port }))
-  .catch((err) => log.error(err));
+  .catch((err) => {
+    if (err instanceof VieroError && err.get && err.get(VieroError.KEY.ERROR)) {
+      log.error(err.get(VieroError.KEY.ERROR).message);
+    } else {
+      log.error(err.message);
+    }
+    process.exit(err.code ? err.code : -1);
+  });
 
 /*
 TODO:
