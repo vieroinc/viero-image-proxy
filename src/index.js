@@ -27,9 +27,9 @@ const packageJson = require(path.join(__dirname, 'package.json'));
 
 program.version(packageJson.version);
 program
-  .option('-d, --debug', 'output extra debugging')
-  .option('-p, --port <port number>', 'TCP port to bind to, defaults 12080', '12080')
-  .option('-a, --address <address>', 'IP address or host to bind to, defaults to "::"', '::')
+  .option('-d, --debug', 'verbose logging')
+  .option('-p, --port <port number>', 'TCP port to bind to', '12080')
+  .option('-a, --address <address>', 'IP address or host to bind to', '::')
   .requiredOption('-c, --cache <path>', 'the cache directory')
   .requiredOption('-b, --baseURL <url>', 'the base URL');
 program.parse(process.argv);
