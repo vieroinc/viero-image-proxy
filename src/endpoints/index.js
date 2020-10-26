@@ -16,7 +16,7 @@
 
 const { VieroLog } = require('@viero/common/log');
 const { respondOk, respondError } = require('@viero/common-nodejs/http/server/respond');
-const { VieroHttpError, http404 } = require('@viero/common-nodejs/http/server/error');
+const { VieroHTTPError, http404 } = require('@viero/common-nodejs/http/server/error');
 const { VieroError } = require('@viero/common/error');
 const { from, to, purge } = require('../cache');
 const { fetch } = require('../fetch');
@@ -58,7 +58,7 @@ const respondWithStream = (headers, stream, url, sign, source, t, res) => {
 };
 
 const respondWithError = (err, url, t, res) => {
-  if (err instanceof VieroHttpError) {
+  if (err instanceof VieroHTTPError) {
     res.statusCode = err.httpCode;
     res.statusMessage = err.httpMessage;
     if (log.isWarning()) {
