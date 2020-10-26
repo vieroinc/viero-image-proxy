@@ -25,7 +25,7 @@ const {
 
 const { VieroLog } = require('@viero/common/log');
 const { VieroError } = require('@viero/common/error');
-const { Parallel } = require('@viero/common-nodejs/parallel');
+const { VieroThreads } = require('@viero/common-nodejs/threads');
 const { http400 } = require('@viero/common-nodejs/http/server/error');
 
 const log = new VieroLog('imageproxy/cache');
@@ -38,7 +38,7 @@ const HEADERS_LENGTH_OFFSET = DIGEST_LENGTH_OFFSET + LENGTH_LENGTH;
 const CONTENT_LENGTH_OFFSET = HEADERS_LENGTH_OFFSET + LENGTH_LENGTH;
 const INDEX_LENGTH = CONTENT_LENGTH_OFFSET + LENGTH_LENGTH;
 
-const sha256Pool = Parallel.createPool('sha256', `${__dirname}${sep}thread.hashing.js`, { max: 5 });
+const digestPool = VieroThreads.createPool(`${__dirname}${sep}thread.hashing.js`, { max: 5 });
 
 const genFilePathBy = (conversionOptions, cacheKey) => {
   if (!conversionOptions) {
@@ -86,7 +86,7 @@ const from = (filePath) => open(filePath).then((fd) => {
   });
 });
 
-const to = (filePath, headers, buffer) => sha256Pool.run(buffer).then((digest) => {
+const to = (filePath, headers, buffer) => digestPool.run(buffer).then((digest) => {
   const digestBuffer = Buffer.from(digest);
   const { connection: trash1, 'keep-alive': trash2, ...keepHeaders } = headers;
   const keepHeadersBuffer = Buffer.from(JSON.stringify(keepHeaders));
