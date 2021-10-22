@@ -77,18 +77,29 @@ const respondWithError = (err, url, t, res) => {
   res.end();
 };
 
-module.exports = {
-  register(server) {
-    const route = server.route('/:conversionOptions/:cacheKey/:path...');
-    route.get(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => Promise
-      .try(() => getOrAdd({ conversionOptions, cacheKey, path }))
-      .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
-      .catch((err) => respondWithError(err, url, t, res)));
+const get = ({ conversionOptions, cacheKey, path, url, res, t = Date.now() }) => Promise
+  .try(() => getOrAdd({ conversionOptions, cacheKey, path }))
+  .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
+  .catch((err) => respondWithError(err, url, t, res));
 
-    route.put(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, t = Date.now() }) => Promise
-      .try(() => update({ conversionOptions, cacheKey, path }))
-      .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
-      .catch((err) => respondWithError(err, url, t, res)));
+const put = ({ conversionOptions, cacheKey, path, url, res, t = Date.now() }) => Promise
+  .try(() => update({ conversionOptions, cacheKey, path }))
+  .then(([headers, stream, sign, source]) => respondWithStream(headers, stream, url, sign, source, t, res))
+  .catch((err) => respondWithError(err, url, t, res));
+
+module.exports = {
+
+  register(server) {
+
+    /*
+    const routeWCacheKey = server.route('/:conversionOptions/:cacheKey/:path...');
+    routeWCacheKey.get(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, }) => get({ conversionOptions, cacheKey, path, url, res, }));
+    routeWCacheKey.put(({ req: { pathParams: { conversionOptions, cacheKey, path }, url }, res, }) => put({ conversionOptions, cacheKey, path, url, res, }));
+    */
+
+    const route = server.route('/:conversionOptions/:path...');
+    route.get(({ req: { pathParams: { conversionOptions, path }, url }, res, }) => get({ conversionOptions, cacheKey: Buffer.from(`${conversionOptions}/${path.split('?').shift()}`).toString('base64'), path, url, res, }));
+    route.put(({ req: { pathParams: { conversionOptions, path }, url }, res, }) => put({ conversionOptions, cacheKey: Buffer.from(`${conversionOptions}/${path.split('?').shift()}`).toString('base64'), path, url, res, }));
 
     server.delete(
       '/:conversionOptions/:cacheKey',
@@ -100,6 +111,7 @@ module.exports = {
           return respondError(res, err);
         }),
     );
+
     return Promise.resolve();
   },
 };

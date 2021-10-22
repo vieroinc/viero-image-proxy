@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "viero-image-srv",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceFolder}/src/",
+            "program": "${workspaceFolder}/src/index.js",
+            "args": [
+                "-p",
+                "8080",
+                "-c",
+                "./cache",
+                "-b",
+                "https://api.us.myu.viero.tv/v2/node/",
+            ]
+        }
+    ]
+}

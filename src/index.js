@@ -23,9 +23,9 @@ const path = require('path');
 global.Promise = require('bluebird');
 
 // eslint-disable-next-line import/no-dynamic-require
-const packageJson = require(path.join(__dirname, 'package.json'));
+//const packageJson = require(path.join(__dirname, 'package.json'));
 
-program.version(packageJson.version);
+//program.version(packageJson.version);
 program
   .option('-d, --debug', 'verbose logging')
   .option('-p, --port <port number>', 'TCP port to bind to', '12080')

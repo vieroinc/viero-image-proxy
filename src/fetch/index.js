@@ -30,7 +30,7 @@ module.exports = {
   },
   fetch: (path) => {
     const url = `${baseURL}/${path}`;
-    return VieroHTTPClient.request(url)
+    return VieroHTTPClient.request({ url })
       .then((res) => {
         if (res.statusCode === 200) return Promise.all([url, res, res.data()]);
         throw errorCode({ code: res.statusCode, message: res.statusMessage, userData: { url } });
