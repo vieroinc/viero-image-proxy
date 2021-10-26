@@ -81,7 +81,7 @@ const COPTIONS = [
   [
     /^q\d{1,3}$/,
     (options, value, meta) => {
-      const quality = Number.parseInt(value.split('q')[1], 10);
+      let quality = Number.parseInt(value.split('q')[1], 10);
       if (quality == 0) {
         quality = 100;
       }
