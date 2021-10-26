@@ -23,11 +23,11 @@ const COPTIONS = [
     (options, value) => {
       const n = Number.parseInt(value, 10);
       // eslint-disable-next-line no-param-reassign
-      if (!options.resize) options.resize = {};
+      if (!options.resize) options.resize = [{}];
       // eslint-disable-next-line no-param-reassign
       options.resize = [
         {
-          ...options.resize,
+          ...options.resize[0],
           width: n,
           height: n,
           fit: sharp.fit.inside,
@@ -43,11 +43,11 @@ const COPTIONS = [
       const width = Number.parseInt(split[0], 10);
       const height = Number.parseInt(split[1], 10);
       // eslint-disable-next-line no-param-reassign
-      if (!options.resize) options.resize = {};
+      if (!options.resize) options.resize = [{}];
       // eslint-disable-next-line no-param-reassign
       options.resize = [
         {
-          ...options.resize,
+          ...options.resize[0],
           width,
           height,
           fit: sharp.fit.inside,
@@ -61,9 +61,9 @@ const COPTIONS = [
     (options, value) => {
       const width = Number.parseInt(value.split('x')[0], 10);
       // eslint-disable-next-line no-param-reassign
-      if (!options.resize) options.resize = {};
+      if (!options.resize) options.resize = [{}];
       // eslint-disable-next-line no-param-reassign
-      options.resize = [{ ...options.resize, width }];
+      options.resize = [{ ...options.resize[0], width, fit: sharp.fit.inside }];
     },
   ],
   // 'xM', eg x300 meaning resize to height M (300) keeping aspect ratio
@@ -72,16 +72,33 @@ const COPTIONS = [
     (options, value) => {
       const height = Number.parseInt(value.split('x')[1], 10);
       // eslint-disable-next-line no-param-reassign
-      if (!options.resize) options.resize = {};
+      if (!options.resize) options.resize = [{}];
       // eslint-disable-next-line no-param-reassign
-      options.resize = [{ ...options.resize, height }];
+      options.resize = [{ ...options.resize[0], height, fit: sharp.fit.inside }];
+    },
+  ],
+  // 'crop', meaning resize should not fit inside but crop
+  [
+    /^crop$/,
+    (options, value, meta) => {
+      // eslint-disable-next-line no-param-reassign
+      if (!options.resize) options.resize = [{}];
+      // eslint-disable-next-line no-param-reassign
+      options.resize = [
+        {
+          width: meta.width,
+          height: meta.height,
+          ...options.resize[0],
+          fit: sharp.fit.cover,
+        },
+      ];
     },
   ],
   // 'qP', eg q100 meaning quality between 0 and 100
   [
     /^q\d{1,3}$/,
     (options, value, meta) => {
-      let quality = Number.parseInt(value.split('q')[1], 10);
+      let quality = Math.min(Number.parseInt(value.split('q')[1], 10), 100);
       if (quality == 0) {
         quality = 100;
       }
@@ -103,7 +120,9 @@ module.exports = {
           coption[0].test(it) ? !!coption[1](options, it, meta) || true : false;
         });
       });
-      return Promise.each(Object.keys(options), (op) => image[op](...options[op])).then(() => image.toBuffer());
+      return Promise.each(Object.keys(options), (op) => {
+        return image[op](...options[op]);
+      }).then(() => image.toBuffer());
     });
   },
 };
